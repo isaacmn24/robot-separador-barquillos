@@ -1,0 +1,6 @@
+Se me acaba de ocurrir que perfectamente podría medir empíricamente cómo varía la tensión de salida del sensor Hall con respecto a la distancia con el imán, y asi crear un modelo empírico.
+
+En principio este modelo relacionaría r respecto a Vout, pero esperamos una forma sinuidal, pues el robot realiza movimientos rotacionales (en forma de un arco).
+
+Tengo que poder relacionar ahora r con los pasos que debe dar el robot
+
