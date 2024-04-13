@@ -11,12 +11,11 @@ const int Zc = 48;                              // Dientes del engranaje anular
 const float relacionEngranes = Zc/Za + 1;       // Relación de engranajes para sistema planetario con carrier fijo
 const float pasosPorRev = stepsPorRev * microsteps * relacionEngranes;        // Pasos que requiere dar el motor para dar una revolución completa
 const int delayStep = 50;                       // Tiempo en microsegundos que hay entre cada pulso de paso. Entre más pequeño, más rápido
-float posActual = 0;                            // Posición actual del motor que se irá actualizando
+unsigned int posActual = 0;                            // Posición actual del motor que se irá actualizando
 const int anguloLimite = 55;                    // Angulo del limite del arco a recorrer
 const int limitePosicion = floor(pasosPorRev/360.0*anguloLimite);                // Pasos que hay desde el 0 hasta el (aproximadamente) angulo limite
-unsigned int cantidadPasos = 0;                 // Cuenta cuantos pasos se ha movido 
 //const float hallDesado;                       // Intensidad de campo magnético para la que se considera que el brazo llegó a la posición deseada
-//int pasos;                                // Cantidad de pasos que se van calculando
+//unsigned int pasos;                           // Cantidad de pasos que se van calculando
 
 // CONSTANTES DE CONTROL
 //float error = 100.0;                          // El error empieza alto pero luego se actualiza
@@ -47,6 +46,23 @@ void loop() {
 }
 
 void secuenciaBusqueda() {
+
+  /*
+  EN LO QUE ESCRIBÍ ACTUALMENTE, LA REFERENCIA ES INTENSIDAD DEL CAMPO MAGNÉTICO, POR LO QUE LOS "PASOS" VAN A SER UN "CAMPO MAGNETICO"
+
+  DE ESTA FORMA, DEBO RELACIONAR EL CAMPO MAGNÉTICO CON LA DISTANCIA QUE HAY ENTRE EL SENSOR Y EL IMÁN
+  pasos = f(campo magnético)
+
+  PARA ELLO ME QUEDA PENDIENTE ESTUDIAR MUY BIEN LA HOJA DE DATOS DEL SENSOR HALL PARA VER SU COMORTAMIENTO (SALIDA, ES DECIR, CORRIENTE)
+  RESPECTO A SU ENTRADA, ES DECIR, CAMPO MAGNÉTICO, PARA VER SI ES LINEAL O (MUY POSIBLEMENTE) NO LINEAL.
+  SI NO ES LINEAL DEBO LINEALIZAR Y, ASIMISMO, BUSCAR CÓMO SE RELACIONA EL CAMPO MAGNÉTICO CON LA DISTANCIA AL SENSOR
+
+  ASI, PODRÉ PONER MÁS ABAJO
+  campo magnetico = pid
+  pasos = f(campo magnetico) = f(pid)
+  */
+
+
   /*
   while(error >= 0.1) {
 
@@ -72,7 +88,7 @@ void secuenciaBusqueda() {
     //suma_error += error;
     //diferncia_error = error - error_anterior;
     //pid = kp*error + ki*suma_error + kd*diferencia_error;
-    //pasos = pid;
+    pasos = f(pid)
 
     for (int paso = 0; paso < pasos; paso++)       // Gira hasta el final
     {
@@ -81,6 +97,13 @@ void secuenciaBusqueda() {
       digitalWrite(PUL,LOW);
       delayMicroseconds(delayStep);
       cantidadPasos++;
+    }
+    
+    if(direccion) {
+      pos_actual += pasos;
+    }
+    else {
+      pos_actual -= pasos;
     }
 
     //error_anterior = error;
