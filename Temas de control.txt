@@ -1,0 +1,11 @@
+En la hoja de datos no encontré relación entre Vout y B (campo magnético), por lo que aún no sé si es una relación lineal.
+
+Encontré una ecuación de dipolo magnético:
+B = mu*2m/(4pi*r^3)
+r = (mu*2m/(4pi*B))^(1/3) (raiz cúbica)
+
+Si puedo encontrar cómo relacionar B con Vout, podría obtener B con las mediciones del arduino, ya sea linealizando o directamente.
+
+QUEDARÍA PENDIENTE HACER UNAS GRÁFICAS PARA ANALIZAR TODOS ESTOS COMPORTAMIENTOS
+
+Con B ya puedo calcular r y sabré la distancia entre el imán y el sensor y asi podré hacer el pid.
