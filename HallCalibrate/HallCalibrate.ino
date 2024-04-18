@@ -7,7 +7,7 @@ void setup() {
 
 void loop() {
   sensorValue = analogRead(sensorPin); // Leer el valor del sensor Hall
-  Serial.print("Valor magnético: ");
+  //Serial.print("Valor magnético: ");
   Serial.println(sensorValue); // Imprimir el valor leído en el puerto serial
   delay(1000); // Esperar 100 milisegundos antes de la próxima lectura
 }

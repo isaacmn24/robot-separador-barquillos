@@ -15,12 +15,13 @@ float posActual = 0;                            // Posición actual del motor qu
 const int anguloLimite = 55;                    // Angulo del limite del arco a recorrer
 const int limitePosicion = floor(pasosPorRev/360.0*anguloLimite);                // Pasos que hay desde el 0 hasta el (aproximadamente) angulo limite
 unsigned int cantidadPasos = 0;                 // Cuenta cuantos pasos se ha movido 
-int sensorHallThreshold = 500;                  // Umbral para detectar campo magnético
+int sensorHallThreshold = 529;                  // Umbral para detectar campo magnético
 
 void setup() {
   pinMode(PUL, OUTPUT);
   pinMode(DIR, OUTPUT);
-  pinMode(sensorHall, INPUT); // Configura el pin del sensor Hall como entrada
+  //pinMode(sensorHall, INPUT); // Configura el pin del sensor Hall como entrada
+  Serial.begin(9600);
 }
 
 void loop() {
@@ -35,8 +36,10 @@ void loop() {
     // Leer valor del sensor Hall
     int hallValue = analogRead(sensorHall);
 
+    Serial.println(hallValue);
+
     // Si el valor del sensor Hall indica la presencia de un campo magnético, detener el motor
-    if (hallValue < sensorHallThreshold) {
+    if (hallValue > sensorHallThreshold) {
       break; // Salir del bucle
     }
   }
@@ -53,7 +56,7 @@ void loop() {
     int hallValue = analogRead(sensorHall);
 
     // Si el valor del sensor Hall indica la presencia de un campo magnético, detener el motor
-    if (hallValue < sensorHallThreshold) {
+    if (hallValue > sensorHallThreshold) {
       break; // Salir del bucle
     }
   }
