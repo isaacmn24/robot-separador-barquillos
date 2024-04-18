@@ -1,8 +1,9 @@
 #define PUL 7               // Cada pulso a este pin es un paso (o micropaso) del motor
 #define DIR 6               // Define la dirección del motor, HIGH es horario
-#define botonReinicio 2;    // Botón para volver el motor a posición inicial (0 grados)
-#define botonBusqueda 3;    // Botón para iniciar secuencia de clasificación de barquillos
-#define sensorHall A0;      // Pin de lectura del sensor Hall
+#define botonReinicio 2    // Botón para volver el motor a posición inicial (0 grados)
+#define botonBusqueda 3    // Botón para iniciar secuencia de clasificación de barquillos
+#define HallDerecho A1      // Pin de lectura del sensor Hall
+#define HallIzquierdo A2
 
 const int stepsPorRev = 200;                    // Motor estándar de 200 pasos por revolución
 const int microsteps = 32;                      // Cantidad de micropasos configurados manualmente en el driver
@@ -19,33 +20,33 @@ unsigned int cantidadPasos = 0;                 // Cuenta cuantos pasos se ha mo
 void setup() {
   pinMode(PUL, OUTPUT);
   pinMode(DIR, OUTPUT);
+  Serial.begin(115200);
+  Serial.print("Pasos"); Serial.print(","); Serial.print("HallDerecho"); Serial.print(","); Serial.print("HallIzquierdo"); Serial.print(","); Serial.println("diferenciaHall");
 }
 
 void loop() {
-  digitalWrite(DIR,0);        // Primero gira hacia la derecha
-  for (int paso = 0; paso < limitePosicion; paso++)       // Gira hasta el final
-  {
-    digitalWrite(PUL,HIGH);
-    delayMicroseconds(delayStep);
-    digitalWrite(PUL,LOW);
-    delayMicroseconds(delayStep);
-  }
-  digitalWrite(DIR,1);        // Luego gira hacia la izquierda
+  digitalWrite(DIR,0);        // Luego gira hacia la izquierda
   for (int paso = 0; paso < 2*limitePosicion; paso++)       // Gira hasta el otro lado (doble recorrido)
   {
+    //Serial.print(paso); Serial.print(","); Serial.print(analogRead(HallDerecho)); Serial.print(","); Serial.print(analogRead(HallIzquierdo)); Serial.print(","); Serial.println(analogRead(HallDerecho)-analogRead(HallIzquierdo));
+    int hola = analogRead(A1);
     digitalWrite(PUL,HIGH);
     delayMicroseconds(delayStep);
     digitalWrite(PUL,LOW);
     delayMicroseconds(delayStep);
   }
-  digitalWrite(DIR,0);        // Primero gira hacia la derecha
-  for (int paso = 0; paso < limitePosicion; paso++)       // Gira hasta el final
+  delay(20000);
+  digitalWrite(DIR,1);
+  for (int paso = 0; paso < 2*limitePosicion; paso++)       // Gira hasta el otro lado (doble recorrido)
   {
+    Serial.print(paso); Serial.print(","); Serial.print(analogRead(HallDerecho)); Serial.print(","); Serial.print(analogRead(HallIzquierdo)); Serial.print(","); Serial.println(analogRead(HallDerecho)-analogRead(HallIzquierdo));
+    //Serial.println(paso);
     digitalWrite(PUL,HIGH);
     delayMicroseconds(delayStep);
     digitalWrite(PUL,LOW);
     delayMicroseconds(delayStep);
   }
-  delay(5000);
+
+  
 }
 
