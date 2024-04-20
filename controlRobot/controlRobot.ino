@@ -50,7 +50,7 @@ void loop() {
   if(busqueda) {
     int medicionHall = analogRead(sensorHall);
     if(medicionHall < sensorHallThreshold) {
-      moverStepper(1);        // Mover stepper un paso
+      moverStepper(1, 50);        // Mover stepper un paso
       posActual++;
       if(posActual >= limitePosicion && !noEncontroIman) {
         direccion = 1;
@@ -61,7 +61,7 @@ void loop() {
       else if(posActual >= 2*limitePosicion && noEncontroIman) {
         direccion = 0;
         digitalWrite(DIR, direccion);
-        moverStepper(limitePosicion);
+        moverStepper(limitePosicion, 250);
         posActual = 0;
         noEncontroIman = 0;
         busqueda = 0;
@@ -79,16 +79,16 @@ void loop() {
         direccion = 0;
         digitalWrite(DIR, direccion);
         if(posActual <= limitePosicion/2) {
-          moverStepper(limitePosicion/2 - posActual);
+          moverStepper(limitePosicion/2 - posActual, 250);
         }
         else {
-          moverStepper(posActual - limitePosicion/2);
+          moverStepper(posActual - limitePosicion/2, 250);
         }
       }
       else {
         direccion = 1;
         digitalWrite(DIR, direccion);
-        moverStepper(posActual);
+        moverStepper(posActual, 250);
       }
     }
   }
@@ -96,24 +96,33 @@ void loop() {
     direccion = 0;
     digitalWrite(DIR, direccion);
     while(digitalRead(botonDerecha)) {
-      moverStepper(1);
+      moverStepper(1, 400);
     }
   }
   if(digitalRead(botonIzquierda)) {
     direccion = 1;
     digitalWrite(DIR, direccion);
     while(digitalRead(botonIzquierda)) {
-      moverStepper(1);
+      moverStepper(1, 400);
     }
   }
 
 }
 
-void moverStepper(int pasos) {
+void moverStepper(int pasos, int delayStep) {
   for(int paso = 0; paso < pasos; paso++) {
     digitalWrite(PUL, HIGH);
     delayMicroseconds(delayStep);
     digitalWrite(PUL, LOW);
     delayMicroseconds(delayStep);
   }
+}
+
+int medirHall() {
+  unsigned int mediciones = 0;
+  int cantidadMediciones = 10;
+  for (int medicion = 0; medicion < cantidadMediciones; medicion++) {
+    mediciones += analogRead(sensorHall);
+  }
+  return mediciones/cantidadMediciones;
 }
