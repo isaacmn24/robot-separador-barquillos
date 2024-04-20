@@ -18,7 +18,7 @@ float posActual = 0;                            // Posición actual del motor qu
 const int anguloLimite = 55;                    // Angulo del limite del arco a recorrer
 const int limitePosicion = floor(pasosPorRev/360.0*anguloLimite);                // Pasos que hay desde el 0 hasta el (aproximadamente) angulo limite
 unsigned int cantidadPasos = 0;                 // Cuenta cuantos pasos se ha movido 
-int sensorHallThreshold = 528;                  // Umbral para detectar campo magnético
+int sensorHallThreshold = 555;                  // Umbral para detectar campo magnético
 bool direccion;                                 // Direccion de giro del stepper
 bool noEncontroIman = 0;
 
@@ -50,7 +50,7 @@ void loop() {
   if(busqueda) {
     int medicionHall = analogRead(sensorHall);
     if(medicionHall < sensorHallThreshold) {
-      moverStepper(1, 50);        // Mover stepper un paso
+      moverStepper(1, 350);        // Mover stepper un paso
       posActual++;
       if(posActual >= limitePosicion && !noEncontroIman) {
         direccion = 1;
@@ -67,10 +67,10 @@ void loop() {
         busqueda = 0;
         delay(2000);
         myservo.write(apertura);
-
       }
     }
     else {
+      noEncontroIman = 0;
       delay(2000);
       myservo.write(apertura);
       delay(2000);
