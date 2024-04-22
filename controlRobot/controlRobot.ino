@@ -15,10 +15,10 @@ const float relacionEngranes = Zc/Za + 1;       // Relación de engranajes para 
 const float pasosPorRev = stepsPorRev * microsteps * relacionEngranes;        // Pasos que requiere dar el motor para dar una revolución completa
 const int delayStep = 500;                      // Tiempo en microsegundos que hay entre cada pulso de paso. Entre más pequeño, más rápido
 float posActual = 0;                            // Posición actual del motor que se irá actualizando
-const int anguloLimite = 55;                    // Angulo del limite del arco a recorrer
+const int anguloLimite = 70;                    // Angulo del limite del arco a recorrer
 const int limitePosicion = floor(pasosPorRev/360.0*anguloLimite);                // Pasos que hay desde el 0 hasta el (aproximadamente) angulo limite
 unsigned int cantidadPasos = 0;                 // Cuenta cuantos pasos se ha movido 
-int sensorHallThreshold = 555;                  // Umbral para detectar campo magnético
+int sensorHallThreshold = 545;                  // Umbral para detectar campo magnético
 bool direccion;                                 // Direccion de giro del stepper
 bool noEncontroIman = 0;
 
@@ -38,60 +38,71 @@ void setup() {
 }
 
 void loop() {
+  // Se presiona el botón de búsqueda y se activa la memoria de búsqueda, asi como 
+  // pone la dirección del motor en antihorario
   if(digitalRead(botonBusqueda)) {
-      busqueda = 1;
+      busqueda = 1;                 // Memoria de búsqueda
+
       delay(2000);
       myservo.write(cierre);        // Cerrar garra
       delay(2000);
-      direccion = 0;                // Empieza girando a la derecha
+
+      direccion = 0;                // Empieza girando antihorario
       digitalWrite(DIR, direccion);
   }
-  Serial.println(busqueda);
+
+  // Si la memoria búsqueda está activada, comienza la rutina de búsqueda
   if(busqueda) {
-    int medicionHall = analogRead(sensorHall);
+    int medicionHall = medirHall();       // Medir sensor Hall
+    Serial.println(medicionHall);
+
+    // Si las mediciones son menores al threshold, es decir, no ha encontrado el imán
     if(medicionHall < sensorHallThreshold) {
-      moverStepper(1, 350);        // Mover stepper un paso
+      moverStepper(1, 5);               // Mover stepper un paso
       posActual++;
+
+      // Si alcanza el límite se devuelve a la posición inicial y resetea memoria de posición
       if(posActual >= limitePosicion && !noEncontroIman) {
-        direccion = 1;
-        digitalWrite(DIR, direccion);
-        posActual = 0;
-        noEncontroIman = 1;
+        direccion = 1;                  
+        digitalWrite(DIR, direccion);       // Se mueve en sentido horario para devolverse
+        moverStepper(posActual, 250);       // Se devuelve a posición inicial
+
+        posActual = 0;                      // Se resetea memoria de posición
+        noEncontroIman = 1;                 // Se activa memoria de que ya hizo un recorrido
       }
-      else if(posActual >= 2*limitePosicion && noEncontroIman) {
+
+      // Si alcanzó el límite una vez más, se devuelve al centro y termina la rutina
+      else if(posActual >= limitePosicion && noEncontroIman) {
         direccion = 0;
-        digitalWrite(DIR, direccion);
-        moverStepper(limitePosicion, 250);
-        posActual = 0;
+        digitalWrite(DIR, direccion);        // Se mueve en antihorario
+        moverStepper(posActual, 250);        // Se devuelve al origen
+
+        posActual = 0;                       // Resetea memorias
         noEncontroIman = 0;
         busqueda = 0;
+
         delay(2000);
-        myservo.write(apertura);
+        myservo.write(apertura);             // Abre garra
       }
     }
+
+    // Si se encontró el imán
     else {
-      noEncontroIman = 0;
       delay(2000);
-      myservo.write(apertura);
+      myservo.write(apertura);        // Abre la garra
       delay(2000);
+
+      direccion = !direccion;         // Invierto la dirección, donde sea que quedó la garra
+      digitalWrite(DIR, direccion);
+      moverStepper(posActual, 250);  // Me devuelvo los pasos dados
+
+      noEncontroIman = 0;             // Reseteo memorias
       busqueda = 0;
-      if(direccion) {
-        direccion = 0;
-        digitalWrite(DIR, direccion);
-        if(posActual <= limitePosicion/2) {
-          moverStepper(limitePosicion/2 - posActual, 250);
-        }
-        else {
-          moverStepper(posActual - limitePosicion/2, 250);
-        }
-      }
-      else {
-        direccion = 1;
-        digitalWrite(DIR, direccion);
-        moverStepper(posActual, 250);
-      }
+      posActual = 0;
     }
   }
+
+  // Mientras se presione el botón derecho, el motor se va a mover un paso antihorario
   if(digitalRead(botonDerecha)) {
     direccion = 0;
     digitalWrite(DIR, direccion);
@@ -99,6 +110,8 @@ void loop() {
       moverStepper(1, 400);
     }
   }
+
+  // Mientras se presione el botón izuierdo, el motor se va a mover un paso horario
   if(digitalRead(botonIzquierda)) {
     direccion = 1;
     digitalWrite(DIR, direccion);
@@ -106,9 +119,11 @@ void loop() {
       moverStepper(1, 400);
     }
   }
-
 }
 
+// Esta función mueve el motor los pasos que entren como parámetro a una velocidad definida
+// por el delayStep que entra como parámetro
+// Lo que hace es mandar un pulso por paso a la entrada PUL del controlador, con una duración delayStep
 void moverStepper(int pasos, int delayStep) {
   for(int paso = 0; paso < pasos; paso++) {
     digitalWrite(PUL, HIGH);
@@ -118,9 +133,10 @@ void moverStepper(int pasos, int delayStep) {
   }
 }
 
+// Esta función toma una muestra de 10 mediciones del sensor Hall y obtiene el promedio
 int medirHall() {
   unsigned int mediciones = 0;
-  int cantidadMediciones = 10;
+  int cantidadMediciones = 30;
   for (int medicion = 0; medicion < cantidadMediciones; medicion++) {
     mediciones += analogRead(sensorHall);
   }
