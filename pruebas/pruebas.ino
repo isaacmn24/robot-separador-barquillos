@@ -18,7 +18,7 @@ float posActual = 0;                            // Posición actual del motor qu
 const int anguloLimite = 55;                    // Angulo del limite del arco a recorrer
 const int limitePosicion = floor(pasosPorRev/360.0*anguloLimite);                // Pasos que hay desde el 0 hasta el (aproximadamente) angulo limite
 unsigned int cantidadPasos = 0;                 // Cuenta cuantos pasos se ha movido 
-int sensorHallThreshold = 527;                  // Umbral para detectar campo magnético
+int sensorHallThreshold = 529;                  // Umbral para detectar campo magnético
 bool direccion;                                 // Direccion de giro del stepper
 bool noEncontroIman = 0;
 
@@ -54,7 +54,7 @@ void loop() {
   // Si la memoria búsqueda está activada, comienza la rutina de búsqueda
   if(busqueda) {
     int medicionHall = medirHall();       // Medir sensor Hall
-    //Serial.println(medicionHall);
+    Serial.println(medicionHall);
 
     // Si las mediciones son menores al threshold, es decir, no ha encontrado el imán
     if(medicionHall < sensorHallThreshold) {
@@ -136,7 +136,7 @@ void moverStepper(int pasos, int delayStep) {
 // Esta función toma una muestra de 10 mediciones del sensor Hall y obtiene el promedio
 int medirHall() {
   unsigned int mediciones = 0;
-  int cantidadMediciones = 50;
+  int cantidadMediciones = 30;
   for (int medicion = 0; medicion < cantidadMediciones; medicion++) {
     mediciones += analogRead(sensorHall);
   }
